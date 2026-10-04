@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>{% block title %}Stillroom{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script defer src="{{ url_for('static', filename='app.js') }}"></script>
+</head>
+<body>
+{% if session.get('user_id') %}
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('index') }}"><span class="brand-mark">s</span><span>stillroom<small>YOUR PRIVATE LIBRARY</small></span></a>
+    <div class="nav-label">LIBRARY</div>
+    <a class="nav-item {% if request.endpoint == 'index' and view != 'favorites' %}active{% endif %}" href="{{ url_for('index') }}"><span>▦</span> All photos</a>
+    <a class="nav-item {% if view == 'favorites' %}active{% endif %}" href="{{ url_for('index', view='favorites') }}"><span>♡</span> Favorites</a>
+    <div class="nav-label album-label">YOUR ALBUMS <button class="tiny-add" type="button" data-open-modal="album-modal" aria-label="Create album">+</button></div>
+    {% for album in albums|default([]) %}
+      <a class="nav-item album-link" href="{{ url_for('album_detail', album_id=album.id) }}"><span class="album-dot"></span><span class="album-name">{{ album.name }}</span><span class="count">{{ album.photo_count }}</span></a>
+    {% endfor %}
+    <div class="sidebar-bottom"><a class="account-chip profile-chip" href="{{ url_for('profile') }}">{% if session.get('avatar_filename') %}<img src="{{ url_for('avatar', user_id=session.get('user_id')) }}?v={{ session.get('avatar_filename') }}" alt="">{% else %}<span class="avatar-fallback">{{ session.get("username", "u")[0]|upper }}</span>{% endif %}<span>Signed in as<strong>{{ session.get("username", "user") }}</strong><small>View profile ↗</small></span></a>{% if session.get("is_admin") %}<a class="nav-item admin-link {% if request.endpoint in ['admin_dashboard', 'users', 'admin_settings'] %}active{% endif %}" href="{{ url_for('admin_dashboard') }}"><span>⚙</span> Admin dashboard</a>{% endif %}<div class="private-badge"><span class="green-dot"></span> Private · Self-hosted</div><form action="{{ url_for('logout') }}" method="post"><button class="logout-button">Sign out ↗</button></form></div>
+  </aside>
+  <main class="main-area">
+    <header class="topbar"><div class="mobile-brand">stillroom<span>™</span></div><form class="search-form" action="{{ url_for('index') }}"><span>⌕</span><input name="q" value="{{ q|default('') }}" placeholder="Search your memories…" aria-label="Search photos">{% if view|default('all') == 'favorites' %}<input type="hidden" name="view" value="favorites">{% endif %}<kbd>↵</kbd></form>{% if session.get('is_admin') %}<a class="top-admin" href="{{ url_for('admin_dashboard') }}" aria-label="Admin dashboard">⚙</a>{% endif %}<a class="top-profile" href="{{ url_for('profile') }}" aria-label="Your profile">{% if session.get('avatar_filename') %}<img src="{{ url_for('avatar', user_id=session.get('user_id')) }}?v={{ session.get('avatar_filename') }}" alt="">{% else %}<span class="avatar-fallback">{{ session.get("username", "u")[0]|upper }}</span>{% endif %}</a><button class="button button-primary upload-trigger" type="button" data-open-modal="upload-modal">↑ <span>Upload photos</span></button></header>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+<div class="modal-backdrop" id="upload-modal" hidden><section class="modal"><button class="modal-close" data-close-modal aria-label="Close">×</button><div class="eyebrow">ADD TO YOUR LIBRARY</div><h2>Bring a moment in.</h2><p class="muted">Your originals stay yours. Stillroom makes a thumbnail and keeps the original file.</p><form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="upload-form" id="upload-form"><label class="drop-zone" id="drop-zone"><span class="upload-icon">↑</span><strong>Choose photos to upload</strong><span class="muted small" id="file-count">JPG, PNG, WebP, GIF, TIFF · multiple files supported</span><input type="file" name="photos" accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/tiff" multiple required id="file-input"></label><div id="upload-progress-wrap" hidden><div class="upload-progress-copy"><span id="upload-progress-text">Preparing upload…</span><span id="upload-progress-percent">0%</span></div><progress id="upload-progress" max="100" value="0"></progress><p id="upload-progress-detail" class="muted small">Uploads are sent in small batches. Keep this page open.</p></div><button class="button button-primary full-button" id="upload-submit" type="submit">Upload to Stillroom</button></form></section></div>
+<div class="modal-backdrop" id="album-modal" hidden><section class="modal modal-small"><button class="modal-close" data-close-modal aria-label="Close">×</button><div class="eyebrow">MAKE A COLLECTION</div><h2>New album</h2><form action="{{ url_for('create_album') }}" method="post" class="album-form"><input name="name" maxlength="100" placeholder="e.g. Weekend in Boston" required autofocus><button class="button button-primary full-button">Create album</button></form></section></div>
+{% endif %}
+{% block outside %}{% endblock %}
+</body></html>

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{% if view == 'favorites' %}Favorites{% else %}Your library{% endif %} · Stillroom{% endblock %}
+{% block content %}
+<section class="page-heading"><div><div class="eyebrow">YOUR SPACE, YOUR PACE</div><h1>{% if view == 'favorites' %}Favorites<span class="heading-period">.</span>{% elif q %}Search results<span class="heading-period">.</span>{% else %}Your library<span class="heading-period">.</span>{% endif %}</h1><p class="subtitle">{% if q %}Matching “{{ q }}”{% else %}A home for the moments worth keeping.{% endif %}</p></div><div class="library-stats"><div><strong>{{ total }}</strong><span>PHOTOS</span></div><div><strong>{{ favorites }}</strong><span>FAVORITES</span></div></div></section>
+{% if photos %}
+  <div class="section-line"><span>{% if view == 'favorites' %}SAVED MOMENTS{% else %}RECENTLY ADDED{% endif %}</span><span>{{ photos|length }} shown</span></div>
+  <div class="photo-grid">
+  {% for photo in photos %}
+    <article class="photo-card" data-photo-id="{{ photo.id }}" data-title="{{ photo.title }}" data-original="{{ photo.original_name }}">
+      <button class="photo-open" type="button" data-open-photo="{{ photo.id }}" aria-label="Open {{ photo.title }}"><img loading="lazy" src="{{ url_for('thumbnail', photo_id=photo.id) }}" alt="{{ photo.title }}"><span class="photo-hover"><span>↗</span></span></button>
+      <div class="photo-info"><div class="photo-title">{{ photo.title }}</div><div class="photo-date">{{ photo.date_label or 'Recently added' }}</div><button class="favorite-button {% if photo.favorite %}is-favorite{% endif %}" data-favorite="{{ photo.id }}" aria-label="Toggle favorite">{% if photo.favorite %}♥{% else %}♡{% endif %}</button></div>
+    </article>
+  {% endfor %}
+  </div>
+{% else %}
+  <section class="empty-state"><div class="empty-art"><span>▧</span><i>✳</i></div><h2>{% if q %}Nothing found just yet.{% else %}Your memories start here.{% endif %}</h2><p>{% if q %}Try another search, or clear the search field.{% else %}Upload a few photos and your library will come to life.{% endif %}</p>{% if not q %}<button class="button button-primary" data-open-modal="upload-modal">↑ Upload your first photos</button>{% endif %}</section>
+{% endif %}
+<div class="lightbox-backdrop" id="lightbox" hidden><div class="lightbox"><button class="lightbox-close" data-close-lightbox aria-label="Close photo">×</button><button class="lightbox-nav previous" data-prev aria-label="Previous photo">‹</button><div class="lightbox-image-wrap"><img id="lightbox-image" alt=""><div class="lightbox-caption"><div><strong id="lightbox-title"></strong><span id="lightbox-meta"></span></div><button id="lightbox-favorite" class="button button-quiet">♡ Favorite</button></div></div><button class="lightbox-nav next" data-next aria-label="Next photo">›</button><aside class="lightbox-details"><div class="eyebrow">PHOTO DETAILS</div><label>Display title<input id="edit-title" maxlength="180"></label><button id="save-title" class="button button-secondary">Save title</button><div class="detail-divider"></div><div class="detail-row"><span>Original file</span><strong id="detail-original"></strong></div><div class="detail-row"><span>Dimensions</span><strong id="detail-dimensions"></strong></div><a id="download-original" class="button button-secondary full-button" download>↓ Download original</a><form id="delete-form" method="post"><button class="delete-button" onclick="return confirm('Delete this photo and its stored original? This cannot be undone.')" type="submit">Delete photo</button></form></aside></div></div>
+{% endblock %}

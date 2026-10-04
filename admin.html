@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Admin dashboard · Stillroom{% endblock %}
+{% block content %}
+<section class="page-heading"><div><div class="eyebrow">SERVER CONTROL</div><h1>Admin dashboard<span class="heading-period">.</span></h1><p class="subtitle">Manage accounts, private libraries, storage, backups, and server settings.</p></div><form method="post" action="{{ url_for('admin_backup') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button-secondary" type="submit">↓ Create &amp; download backup</button></form></section>
+<div class="admin-stats">
+  <article class="admin-stat"><span>ACCOUNTS</span><strong>{{ people|length }}</strong><small>{{ people|selectattr('active')|list|length }} enabled</small></article>
+  <article class="admin-stat"><span>PHOTOS</span><strong>{{ photo_count }}</strong><small>{{ '%.2f'|format(photo_bytes / 1073741824) }} GB originals</small></article>
+  <article class="admin-stat"><span>ALBUMS</span><strong>{{ album_count }}</strong><small>{{ '%.2f'|format(thumb_bytes / 1073741824) }} GB thumbnails</small></article>
+  <article class="admin-stat"><span>SERVER UPTIME</span><strong>{{ (uptime // 3600) }}h {{ ((uptime % 3600) // 60) }}m</strong><small>Since app launch</small></article>
+</div>
+<div class="admin-grid">
+  <section class="settings-card admin-wide">
+    <div class="eyebrow">ACCOUNT DIRECTORY</div><h2>Users &amp; libraries</h2><p class="muted">Admin actions can permanently delete photos. Each destructive action asks for confirmation.</p>
+    <div class="admin-user-list">
+    {% for person in people %}
+      <article class="admin-user-row">
+        <div class="profile-preview compact-preview">
+          {% if person.avatar_filename %}<img src="{{ url_for('avatar', user_id=person.id) }}?v={{ person.avatar_filename }}" alt="">
+          {% else %}<div class="avatar-fallback">{{ person.username[0]|upper }}</div>{% endif %}
+          <div class="admin-user-name"><strong>{{ person.username }}{% if person.is_admin %} <span class="role-pill">ADMIN</span>{% endif %}</strong><span>{{ person.photo_count }} photos · {{ 'Enabled' if person.active else 'Disabled' }} · Joined {{ person.created_at[:10] }}</span></div>
+        </div>
+        <div class="admin-actions">
+          {% if person.id != session.get('user_id') %}
+          <form method="post" action="{{ url_for('user_toggle', user_id=person.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button-secondary" type="submit">{{ 'Disable' if person.active else 'Enable' }}</button></form>
+          <form method="post" action="{{ url_for('admin_toggle_role', user_id=person.id) }}" onsubmit="return confirm('Change admin privileges for {{ person.username }}?')"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button-secondary" type="submit">{{ 'Demote' if person.is_admin else 'Make admin' }}</button></form>
+          {% endif %}
+          <details class="admin-more"><summary>More</summary><div class="admin-more-panel">
+            <form method="post" action="{{ url_for('admin_reset_password', user_id=person.id) }}" class="admin-inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>Set temporary password<input type="password" name="password" minlength="12" placeholder="12+ characters" required></label><button class="button button-secondary">Reset password</button></form>
+            <form method="post" action="{{ url_for('admin_clear_library', user_id=person.id) }}" onsubmit="return confirm('PERMANENTLY delete all photos in {{ person.username }}’s library? This cannot be undone.')"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button danger-button" type="submit">Delete this user's photos</button></form>
+            {% if person.id != session.get('user_id') %}<form method="post" action="{{ url_for('admin_delete_user', user_id=person.id) }}" onsubmit="return confirm('PERMANENTLY delete account {{ person.username }} and all their photos and albums? This cannot be undone.')"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button danger-button" type="submit">Delete account + library</button></form>{% endif %}
+          </div></details>
+        </div>
+      </article>
+    {% endfor %}
+    </div>
+    <div class="admin-create-user"><div><strong>Create account</strong><p class="muted small">New accounts start as standard users.</p></div><form method="post" action="{{ url_for('users') }}" class="admin-create-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input name="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9_-]+" placeholder="Username"><input type="password" name="password" required minlength="12" placeholder="Temporary password"><button class="button button-primary">Create user</button></form></div>
+  </section>
+  <section class="settings-card">
+    <div class="eyebrow">SERVER CONFIGURATION</div><h2>Upload limits</h2><p class="muted">Change the maximum size of a single upload request. Bulk uploads are still split into smaller batches by the browser.</p>
+    <form method="post" action="{{ url_for('admin_settings') }}" class="auth-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>Maximum request size (MB)<input type="number" name="max_upload_mb" min="16" max="2048" value="{{ max_upload_mb }}" required></label><button class="button button-primary full-button">Save server settings</button></form>
+    <div class="detail-divider"></div><div class="server-detail"><span>Data location</span><code>{{ data_root_label|default('Local application data / Stillroom') }}</code></div><div class="server-detail"><span>Disk used</span><strong>{{ '%.1f'|format(disk_used / 1073741824) }} GB / {{ '%.1f'|format(disk_total / 1073741824) }} GB</strong></div><div class="disk-meter"><span style="width: {{ [100, (disk_used * 100 / disk_total)|round(1)]|min }}%"></span></div><div class="server-detail"><span>Free disk space</span><strong>{{ '%.1f'|format(disk_free / 1073741824) }} GB</strong></div><div class="server-detail"><span>Profile pictures</span><strong>{{ '%.1f'|format(avatar_bytes / 1048576) }} MB</strong></div>
+  </section>
+  <section class="settings-card">
+    <div class="eyebrow">BACKUPS</div><h2>Database &amp; media</h2><p class="muted">Creates a ZIP containing the database, originals, thumbnails, avatars, and configuration. Store a copy somewhere other than this server.</p><form method="post" action="{{ url_for('admin_backup') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button-primary full-button" type="submit">Create &amp; download backup</button></form>
+    {% if backups %}<div class="backup-list">{% for backup in backups[:8] %}<div class="backup-row"><div><strong>{{ backup.name }}</strong><span>{{ '%.1f'|format(backup.stat().st_size / 1048576) }} MB · {{ backup.stat().st_mtime|datetimeformat }}</span></div><div class="backup-actions"><a class="button button-secondary" href="{{ url_for('admin_download_existing_backup', name=backup.name) }}">Download</a><form method="post" action="{{ url_for('admin_delete_backup', name=backup.name) }}" onsubmit="return confirm('Delete this server-side backup archive?')"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button danger-button" type="submit">Delete</button></form></div></div>{% endfor %}</div>{% else %}<p class="muted small">No server-side backup archives yet.</p>{% endif %}
+  </section>
+  <section class="settings-card admin-wide">
+    <div class="eyebrow">AUDIT TRAIL</div><h2>Recent activity</h2>
+    {% if activity %}<div class="activity-list">{% for event in activity %}<div class="activity-row"><span class="activity-dot"></span><div><strong>{{ event.action.replace('_', ' ')|title }}</strong><p>{{ event.detail }}</p><small>{{ event.actor_name }} · {{ event.created_at }}</small></div></div>{% endfor %}</div>{% else %}<p class="muted">Activity will appear here as people use Stillroom.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

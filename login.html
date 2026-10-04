@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Stillroom{% endblock %}
+{% block outside %}
+<main class="auth-page"><a class="brand auth-brand" href="#"><span class="brand-mark">s</span><span>stillroom<small>YOUR PRIVATE LIBRARY</small></span></a><section class="auth-card"><div class="eyebrow">WELCOME BACK</div><h1>Your memories,<br>right where you left them.</h1><p class="muted">Sign in to your personal photo library.</p>{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}<form method="post" class="auth-form"><label>Username<input type="text" name="username" required autofocus autocomplete="username"></label><label>Password<input type="password" name="password" required autocomplete="current-password"></label><button class="button button-primary full-button">Sign in →</button></form><div class="auth-foot"><span class="green-dot"></span> Private · Self-hosted</div></section><p class="auth-note">A quieter place for your photos.™</p></main>
+{% endblock %}

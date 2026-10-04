@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Manage users · Stillroom{% endblock %}
+{% block content %}
+<section class="page-heading"><div><div class="eyebrow">ADMINISTRATION</div><h1>People<span class="heading-period">.</span></h1><p class="subtitle">Create accounts and control who can sign in. Each account has a separate private photo library.</p></div></section>
+<div class="users-layout">
+  <section class="settings-card">
+    <div class="eyebrow">NEW ACCOUNT</div><h2>Add someone</h2><p class="muted">Usernames use letters, numbers, underscores or hyphens. Passwords must be at least 12 characters.</p>
+    <form method="post" class="auth-form user-create-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label>Username<input name="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9_-]+" autocomplete="off"></label>
+      <label>Temporary password<input type="password" name="password" required minlength="12" autocomplete="new-password"></label>
+      <button class="button button-primary full-button">Create account</button>
+    </form>
+  </section>
+  <section class="settings-card">
+    <div class="eyebrow">ACCOUNTS</div><h2>{{ people|length }} account{{ '' if people|length == 1 else 's' }}</h2>
+    <div class="user-list">
+    {% for person in people %}
+      <article class="user-row"><div class="user-avatar">{{ person.username[0]|upper }}</div><div class="user-info"><strong>{{ person.username }}{% if person.is_admin %} <span class="role-pill">ADMIN</span>{% endif %}</strong><span>{{ person.photo_count }} photos · {{ 'Enabled' if person.active else 'Disabled' }}</span></div>
+      {% if person.id != session.get('user_id') %}<form method="post" action="{{ url_for('user_toggle', user_id=person.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button-secondary" type="submit">{{ 'Disable' if person.active else 'Enable' }}</button></form>{% else %}<span class="muted small">Current account</span>{% endif %}</article>
+    {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

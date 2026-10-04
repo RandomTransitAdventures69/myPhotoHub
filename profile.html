@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Your profile · Stillroom{% endblock %}
+{% block content %}
+<section class="page-heading"><div><div class="eyebrow">YOUR ACCOUNT</div><h1>Profile<span class="heading-period">.</span></h1><p class="subtitle">Manage your profile picture and sign-in password.</p></div></section>
+<div class="admin-grid profile-grid">
+  <section class="settings-card">
+    <div class="eyebrow">PROFILE PICTURE</div><h2>Make it yours</h2>
+    <div class="profile-preview">
+      {% if person.avatar_filename %}<img src="{{ url_for('avatar', user_id=person.id) }}?v={{ person.avatar_filename }}" alt="Profile picture">
+      {% else %}<div class="avatar-fallback avatar-large">{{ person.username[0]|upper }}</div>{% endif %}
+      <div><strong>{{ person.username }}</strong><div class="muted small">{{ 'Administrator' if person.is_admin else 'Standard account' }}</div></div>
+    </div>
+    <form method="post" enctype="multipart/form-data" class="auth-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label>Choose a picture<input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" required></label>
+      <p class="muted small">JPG, PNG, or WebP. Stillroom saves a resized copy.</p>
+      <button class="button button-primary full-button">Save profile picture</button>
+    </form>
+  </section>
+  <section class="settings-card">
+    <div class="eyebrow">SECURITY</div><h2>Change password</h2><p class="muted">Use at least 12 characters. Your current password is required.</p>
+    <form method="post" class="auth-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="action" value="password">
+      <label>Current password<input type="password" name="current_password" autocomplete="current-password" required></label>
+      <label>New password<input type="password" name="new_password" minlength="12" autocomplete="new-password" required></label>
+      <label>Confirm new password<input type="password" name="confirm_password" minlength="12" autocomplete="new-password" required></label>
+      <button class="button button-primary full-button">Update password</button>
+    </form>
+  </section>
+</div>
+{% endblock %}
