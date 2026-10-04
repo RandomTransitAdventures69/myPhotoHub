@@ -1,4 +1,4 @@
-# Stillroom
+# myPhotoHub
 
 A lightweight, self-hosted photo library for Windows. No Docker, no Node.js, no frontend build step.
 
@@ -12,27 +12,27 @@ During Python setup, enable **Add Python to PATH**. If the `py` launcher is avai
 
 ## Run it
 
-1. Extract this folder somewhere persistent, e.g. `C:\Stillroom`.
-2. Double-click `run-stillroom.bat`.
+1. Extract this folder somewhere persistent, e.g. `C:\myPhotoHub`.
+2. Double-click `run-myPhotoHub.bat`.
 3. Wait for dependencies to install the first time.
 4. Open `http://127.0.0.1:5055`.
 5. Create your admin username and a password of at least 12 characters.
 6. Open **Admin dashboard** to manage separate accounts for family or friends, profiles, storage, backups, and server settings.
 
-Keep the console window open while using Stillroom. Closing it stops the web app; your photos and database remain on disk.
+Keep the console window open while using myPhotoHub. Closing it stops the web app; your photos and database remain on disk.
 
 ## Shared storage across versions
 
 Every version stores its library in the same Windows user data folder by default:
 
-- `%LOCALAPPDATA%\Stillroom\photos\` — original uploaded images
-- `%LOCALAPPDATA%\Stillroom\thumbnails\` — generated thumbnails
-- `%LOCALAPPDATA%\Stillroom\instance\stillroom.db` — users, photo ownership, albums, favorites and metadata
-- `%LOCALAPPDATA%\Stillroom\instance\config.json` — session secret and setup configuration
+- `%LOCALAPPDATA%\myPhotoHub\photos\` — original uploaded images
+- `%LOCALAPPDATA%\myPhotoHub\thumbnails\` — generated thumbnails
+- `%LOCALAPPDATA%\myPhotoHub\instance\myPhotoHub.db` — users, photo ownership, albums, favorites and metadata
+- `%LOCALAPPDATA%\myPhotoHub\instance\config.json` — session secret and setup configuration
 
-This means you can extract a newer Stillroom ZIP into a different application folder and it will still use the same accounts and library. On first launch, it also copies legacy `instance`, `photos`, and `thumbnails` folders from beside `app.py` into the shared location when the shared location does not already exist. The old files are left in place as a safety copy. Do not run two Stillroom versions at the same time; they share one database and use the same port.
+This means you can extract a newer myPhotoHub ZIP into a different application folder and it will still use the same accounts and library. On first launch, it also copies legacy `instance`, `photos`, and `thumbnails` folders from beside `app.py` into the shared location when the shared location does not already exist. The old files are left in place as a safety copy. Do not run two myPhotoHub versions at the same time; they share one database and use the same port.
 
-Back up the whole `%LOCALAPPDATA%\Stillroom\` folder together. To choose another shared location, set `STILLROOM_DATA_DIR` before launching Stillroom.
+Back up the whole `%LOCALAPPDATA%\myPhotoHub\` folder together. To choose another shared location, set `myPhotoHub_DATA_DIR` before launching myPhotoHub.
 
 ## Access from other devices
 
@@ -47,7 +47,7 @@ If other devices cannot connect, Windows Firewall may be blocking Python. Create
 
 ## Uploads and formats
 
-Supports JPG/JPEG, PNG, WebP, GIF, BMP, TIF and TIFF. HEIC/HEIF and RAW formats are not currently supported. The server retains a 512 MB hard limit per request, while the browser automatically divides a large selection into sequential batches of up to 40 files and roughly 96 MB each. The upload window shows progress. Keep the browser tab open until it completes; if the connection fails, already-saved batches remain in the library and can be skipped manually when retrying. You can change the server request cap with `STILLROOM_MAX_UPLOAD_MB` before launch.
+Supports JPG/JPEG, PNG, WebP, GIF, BMP, TIF and TIFF. HEIC/HEIF and RAW formats are not currently supported. The server retains a 512 MB hard limit per request, while the browser automatically divides a large selection into sequential batches of up to 40 files and roughly 96 MB each. The upload window shows progress. Keep the browser tab open until it completes; if the connection fails, already-saved batches remain in the library and can be skipped manually when retrying. You can change the server request cap with `myPhotoHub_MAX_UPLOAD_MB` before launch.
 
 ## Current features
 
@@ -68,8 +68,8 @@ Supports JPG/JPEG, PNG, WebP, GIF, BMP, TIF and TIFF. HEIC/HEIF and RAW formats 
 ## Notes
 
 - Administrators can manage accounts and delete other users’ libraries. Standard users cannot view or modify another account’s photos or albums. Admin actions that delete data require a browser confirmation.
-- Backups contain the SQLite database and all Stillroom media/configuration. Keep an extra copy off the server. The dashboard creates and downloads backups; restoring one currently requires stopping Stillroom and restoring the files manually.
-- Admin controls apply to the Stillroom application and its data, not Windows itself. Stop/restart the server using the Stillroom console or Windows process controls.
+- Backups contain the SQLite database and all myPhotoHub media/configuration. Keep an extra copy off the server. The dashboard creates and downloads backups; restoring one currently requires stopping myPhotoHub and restoring the files manually.
+- Admin controls apply to the myPhotoHub application and its data, not Windows itself. Stop/restart the server using the myPhotoHub console or Windows process controls.
 - The app stores photos as ordinary files and metadata in SQLite.
-- Uploads are copied into Stillroom; they do not delete or alter the source copies.
+- Uploads are copied into myPhotoHub; they do not delete or alter the source copies.
 - For safety, this version does not automatically shut down Windows or delete original photos without a confirmation step.
