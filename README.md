@@ -1,5 +1,5 @@
 # myPhotoHub
-
+### yes i know it says stillroom im lazy and dont wanna change it
 A lightweight, self-hosted photo library for Windows. No Docker, no Node.js, no frontend build step.
 
 ## Requirements
